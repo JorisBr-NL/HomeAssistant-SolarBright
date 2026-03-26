@@ -1,0 +1,6 @@
+{
+  "name": "SolarBright Inverter",
+  "content_in_root": false,
+  "domains": ["solarbright"],
+  "iot_class": "local_polling"
+}
