@@ -1,6 +1,6 @@
 {
   "name": "SolarBright Inverter",
-  "content_in_root": false,
-  "domains": ["solarbright"],
+  "domain": "solarbright",
+  "homeassistant": "2023.0.0",
   "iot_class": "local_polling"
 }
