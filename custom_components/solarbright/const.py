@@ -1,1 +1,3 @@
+DOMAIN = "solarbright"
 
+DEFAULT_SCAN_INTERVAL = 30
