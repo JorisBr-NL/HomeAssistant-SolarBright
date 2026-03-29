@@ -4,7 +4,8 @@ from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from .const import DOMAIN
 
 SENSORS = [
-    ("current_power", "Current Power", UnitOfPower.WATT, SensorDeviceClass.POWER, None),
+    # key, name, unit, device_class, state_class
+    ("current_power", "Current Power", UnitOfPower.WATT, SensorDeviceClass.POWER, SensorStateClass.MEASUREMENT),
     ("daily_energy", "Daily Energy", UnitOfEnergy.KILO_WATT_HOUR, SensorDeviceClass.ENERGY, SensorStateClass.TOTAL),
     ("total_energy", "Total Energy", UnitOfEnergy.KILO_WATT_HOUR, SensorDeviceClass.ENERGY, SensorStateClass.TOTAL_INCREASING),
 ]
@@ -19,9 +20,18 @@ async def async_setup_entry(hass, entry, async_add_entities):
             entities.append(SolarBrightSensor(coord, key, name, unit, device_class, state_class))
 
     # Combined sensors for all inverters
-    entities.append(CombinedEnergySensor(hass, coordinators, "current_power", "Combined Power", "W", SensorDeviceClass.POWER, None))
-    entities.append(CombinedEnergySensor(hass, coordinators, "daily_energy", "Combined Daily Energy", "kWh", SensorDeviceClass.ENERGY, SensorStateClass.TOTAL))
-    entities.append(CombinedEnergySensor(hass, coordinators, "total_energy", "Combined Total Energy", "kWh", SensorDeviceClass.ENERGY, SensorStateClass.TOTAL_INCREASING))
+    entities.append(CombinedEnergySensor(
+        hass, coordinators, "current_power", "Combined Power", UnitOfPower.WATT,
+        SensorDeviceClass.POWER, SensorStateClass.MEASUREMENT
+    ))
+    entities.append(CombinedEnergySensor(
+        hass, coordinators, "daily_energy", "Combined Daily Energy", UnitOfEnergy.KILO_WATT_HOUR,
+        SensorDeviceClass.ENERGY, SensorStateClass.TOTAL
+    ))
+    entities.append(CombinedEnergySensor(
+        hass, coordinators, "total_energy", "Combined Total Energy", UnitOfEnergy.KILO_WATT_HOUR,
+        SensorDeviceClass.ENERGY, SensorStateClass.TOTAL_INCREASING
+    ))
 
     async_add_entities(entities)
 
