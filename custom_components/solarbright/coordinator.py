@@ -24,8 +24,8 @@ async def fetch_data(session, ip):
 
     return {
         "current_power": int(data[5]),
-        "daily_energy": int(data[6]) / 1000,
-        "total_energy": int(data[7]) / 1000,
+        "daily_energy": int(data[6]) / 100,
+        "total_energy": int(data[7]) / 100,
     }
 
 
