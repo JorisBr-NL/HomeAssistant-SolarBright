@@ -1,6 +1,6 @@
 # SolarBright Inverter (Home Assistant)
 
-Custom integration for SolarBright inverters via local API.
+Custom integration for Hosala SolarBright inverters via local API.
 
 ## Author
 
