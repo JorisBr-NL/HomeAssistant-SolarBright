@@ -1,0 +1,10 @@
+{
+  "services": {},
+  "entity": {
+    "sensor": {
+      "current_power": "mdi:solar-power",
+      "daily_energy": "mdi:weather-sunny",
+      "total_energy": "mdi:counter"
+    }
+  }
+}
