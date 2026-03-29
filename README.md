@@ -2,6 +2,10 @@
 
 Custom integration for SolarBright inverters via local API.
 
+## Author
+
+This integration was written and maintained by **Joris Bakker**.
+
 ## Features
 - Local polling (no cloud)
 - Multiple inverter support
