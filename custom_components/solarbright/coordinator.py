@@ -1,10 +1,9 @@
 import aiohttp
 import logging
 import re
-from datetime import timedelta, datetime
+from datetime import timedelta
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
-from homeassistant.helpers.sun import get_astral_event_date
-
+from homeassistant.util import dt as dt_util
 from .const import DEFAULT_SCAN_INTERVAL
 
 _LOGGER = logging.getLogger(__name__)
@@ -12,6 +11,7 @@ _LOGGER = logging.getLogger(__name__)
 SUN_MARGIN = timedelta(minutes=30)
 
 async def fetch_data(session, ip):
+    """Fetch data from inverter API."""
     ip = ip.strip().replace("http://", "").replace("https://", "")
     url = f"http://{ip}/js/status.js"
 
@@ -25,12 +25,15 @@ async def fetch_data(session, ip):
     data = match.group(1).split(",")
 
     return {
-        "current_power": int(data[5]),             # W
-        "daily_energy": round(int(data[6]) / 100, 2),  # kWh
-        "total_energy": round(int(data[7]) / 100, 2),  # kWh
+        "current_power": int(data[5]),                # W
+        "daily_energy": round(int(data[6]) / 100, 2), # kWh
+        "total_energy": round(int(data[7]) / 100, 2), # kWh
     }
 
+
 class SolarBrightCoordinator(DataUpdateCoordinator):
+    """Coordinator for a single inverter."""
+
     def __init__(self, hass, session, ip):
         super().__init__(
             hass,
@@ -42,15 +45,16 @@ class SolarBrightCoordinator(DataUpdateCoordinator):
         self.ip = ip
 
     async def _async_update_data(self):
-        now = datetime.now(self.hass.config.time_zone)
-        sunrise = get_astral_event_date(self.hass, "sunrise").astimezone()
-        sunset = get_astral_event_date(self.hass, "sunset").astimezone()
+        """Poll inverter data respecting sunrise/sunset."""
+        now = dt_util.now()  # tz-aware datetime
+        sunrise = dt_util.get_astral_event_date(self.hass, "sunrise")
+        sunset = dt_util.get_astral_event_date(self.hass, "sunset")
 
         poll_start = sunrise - SUN_MARGIN
         poll_end = sunset + SUN_MARGIN
 
         if not (poll_start <= now <= poll_end):
-            # Outside daylight hours → return 0 for power
+            # Nighttime: return 0 power but keep energy values if available
             if hasattr(self, "data") and self.data:
                 return {
                     "current_power": 0,
@@ -63,5 +67,5 @@ class SolarBrightCoordinator(DataUpdateCoordinator):
                 "total_energy": 0,
             }
 
-        # Normal polling
+        # Daytime: normal polling
         return await fetch_data(self.session, self.ip)
