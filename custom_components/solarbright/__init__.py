@@ -1,19 +1,35 @@
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from .const import DOMAIN, DATA_COORDINATORS
-from .forecast_coordinator import SolarForecastCoordinator
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-PLATFORMS = ["sensor", "binary_sensor"]
+from .const import DOMAIN
+from .coordinator import SolarBrightCoordinator
+
+PLATFORMS = ["sensor"]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
-    hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN].setdefault(DATA_COORDINATORS, {})
+    session = async_get_clientsession(hass)
 
-    # Setup forecast coordinator (shared)
-    if "forecast" not in hass.data[DOMAIN]:
-        forecast_coordinator = SolarForecastCoordinator(hass)
-        await forecast_coordinator.async_config_entry_first_refresh()
-        hass.data[DOMAIN]["forecast"] = forecast_coordinator
+    coordinator = SolarBrightCoordinator(
+        hass,
+        session,
+        entry.data["ip"],
+    )
+
+    await coordinator.async_config_entry_first_refresh()
+
+    hass.data.setdefault(DOMAIN, {})
+    hass.data[DOMAIN][entry.entry_id] = coordinator
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
     return True
+
+
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+
+    if unload_ok:
+        hass.data[DOMAIN].pop(entry.entry_id)
+
+    return unload_ok
