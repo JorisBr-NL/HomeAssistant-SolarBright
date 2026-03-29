@@ -1,40 +1,50 @@
-from homeassistant.components.sensor import SensorEntity, SensorDeviceClass, SensorStateClass
-from homeassistant.helpers.entity import DeviceInfo
-from .coordinator import GLOBAL_COORDINATORS
-from .forecast_coordinator import SolarForecastCoordinator
+from homeassistant.components.sensor import SensorEntity
+from homeassistant.const import UnitOfPower, UnitOfEnergy
+from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
+
 from .const import DOMAIN
 
+
 SENSORS = [
-    ("power", "Power", "W", SensorDeviceClass.POWER, SensorStateClass.MEASUREMENT),
-    ("power_pct", "Power %", "%", None, SensorStateClass.MEASUREMENT),
-    ("daily", "Daily Yield", "kWh", SensorDeviceClass.ENERGY, SensorStateClass.TOTAL_INCREASING),
-    ("total", "Total Yield", "kWh", SensorDeviceClass.ENERGY, SensorStateClass.TOTAL_INCREASING),
-    ("fail_count", "Fail Count", None, None, None),
+    ("current_power", "Current Power", UnitOfPower.WATT, SensorDeviceClass.POWER, None),
+    ("daily_energy", "Daily Energy", UnitOfEnergy.KILO_WATT_HOUR, SensorDeviceClass.ENERGY, SensorStateClass.TOTAL),
+    ("total_energy", "Total Energy", UnitOfEnergy.KILO_WATT_HOUR, SensorDeviceClass.ENERGY, SensorStateClass.TOTAL_INCREASING),
 ]
 
-FORECAST_SENSORS = [
-    ("hourly", "Solar Forecast Next 24h", "kWh", None, None),
-    ("daily", "Solar Forecast Next 3 Days", "kWh", None, None),
-]
 
 async def async_setup_entry(hass, entry, async_add_entities):
-    entities = []
+    coordinator = hass.data[DOMAIN][entry.entry_id]
 
-    coordinator = GLOBAL_COORDINATORS[0] if GLOBAL_COORDINATORS else None
-
-    for key, name, unit, dev_class, state_class in SENSORS:
-        entities.append(SolarBrightSensor(coordinator, entry, key, name, unit, dev_class, state_class))
-
-    # Combined sensors
-    entities.append(SolarBrightCombinedSensor("power", "Power", "W"))
-    entities.append(SolarBrightCombinedSensor("daily", "Daily Yield", "kWh"))
-    entities.append(SolarBrightCombinedSensor("total", "Total Yield", "kWh"))
-
-    # Forecast sensors
-    forecast = hass.data[DOMAIN]["forecast"]
-    for key, name, unit, dev_class, state_class in FORECAST_SENSORS:
-        entities.append(SolarForecastSensor(forecast, key, name, unit))
+    entities = [
+        SolarBrightSensor(coordinator, key, name, unit, device_class, state_class)
+        for key, name, unit, device_class, state_class in SENSORS
+    ]
 
     async_add_entities(entities)
 
-# … include previous SolarBrightSensor, SolarBrightCombinedSensor, SolarForecastSensor classes …
+
+class SolarBrightSensor(SensorEntity):
+    def __init__(self, coordinator, key, name, unit, device_class, state_class):
+        self.coordinator = coordinator
+        self._key = key
+
+        self._attr_name = name
+        self._attr_native_unit_of_measurement = unit
+        self._attr_device_class = device_class
+        self._attr_state_class = state_class
+        self._attr_unique_id = f"{coordinator.ip}_{key}"
+
+    @property
+    def native_value(self):
+        return self.coordinator.data.get(self._key)
+
+    @property
+    def device_info(self):
+        return {
+            "identifiers": {("solarbright", self.coordinator.ip)},
+            "name": f"SolarBright {self.coordinator.ip}",
+            "manufacturer": "SolarBright",
+        }
+
+    async def async_update(self):
+        await self.coordinator.async_request_refresh()
