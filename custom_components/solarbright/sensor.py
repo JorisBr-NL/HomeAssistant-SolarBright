@@ -18,7 +18,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
         for key, name, unit, device_class, state_class in SENSORS:
             entities.append(SolarBrightSensor(coord, key, name, unit, device_class, state_class))
 
-    # Combined sensors
+    # Combined sensors for all inverters
     entities.append(CombinedEnergySensor(hass, coordinators, "current_power", "Combined Power", "W", SensorDeviceClass.POWER, None))
     entities.append(CombinedEnergySensor(hass, coordinators, "daily_energy", "Combined Daily Energy", "kWh", SensorDeviceClass.ENERGY, SensorStateClass.TOTAL))
     entities.append(CombinedEnergySensor(hass, coordinators, "total_energy", "Combined Total Energy", "kWh", SensorDeviceClass.ENERGY, SensorStateClass.TOTAL_INCREASING))
@@ -27,6 +27,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
 
 class SolarBrightSensor(SensorEntity):
+    """Individual inverter sensor."""
+
     def __init__(self, coordinator, key, name, unit, device_class, state_class):
         self.coordinator = coordinator
         self._key = key
@@ -53,7 +55,7 @@ class SolarBrightSensor(SensorEntity):
 
 
 class CombinedEnergySensor(SensorEntity):
-    """Virtual sensor to combine all inverters."""
+    """Virtual sensor combining all inverters."""
 
     def __init__(self, hass, coordinators, key, name, unit, device_class, state_class):
         self.hass = hass
