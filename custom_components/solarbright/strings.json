@@ -1,0 +1,13 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Add SolarBright Inverter",
+        "description": "Enter the IP address of your inverter",
+        "data": {
+          "ip": "IP Address"
+        }
+      }
+    }
+  }
+}
