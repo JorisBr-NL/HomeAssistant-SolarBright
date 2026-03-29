@@ -3,7 +3,7 @@ import logging
 import re
 from datetime import timedelta
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
-from homeassistant.util import dt as dt_util
+from homeassistant.util.dt import parse_datetime, now as dt_now
 from .const import DEFAULT_SCAN_INTERVAL
 
 _LOGGER = logging.getLogger(__name__)
@@ -46,14 +46,19 @@ class SolarBrightCoordinator(DataUpdateCoordinator):
 
     async def _async_update_data(self):
         """Poll inverter data respecting sunrise/sunset."""
-        now = dt_util.now()  # tz-aware datetime
+        now = dt_now()  # tz-aware datetime
 
+        # Get sun entity
         sun = self.hass.states.get("sun.sun")
         if sun:
-            sunrise = sun.attributes.get("next_rising")
-            sunset = sun.attributes.get("next_setting")
+            sunrise = parse_datetime(sun.attributes.get("next_rising"))
+            sunset = parse_datetime(sun.attributes.get("next_setting"))
+            # Fallback if parsing fails
+            if not sunrise or not sunset:
+                sunrise = now - timedelta(hours=1)
+                sunset = now + timedelta(hours=1)
         else:
-            # fallback if sun entity missing: poll all day
+            # Fallback if sun entity missing
             sunrise = now - timedelta(hours=1)
             sunset = now + timedelta(hours=1)
 
