@@ -47,14 +47,21 @@ class SolarBrightCoordinator(DataUpdateCoordinator):
     async def _async_update_data(self):
         """Poll inverter data respecting sunrise/sunset."""
         now = dt_util.now()  # tz-aware datetime
-        sunrise = dt_util.get_astral_event_date(self.hass, "sunrise")
-        sunset = dt_util.get_astral_event_date(self.hass, "sunset")
+
+        sun = self.hass.states.get("sun.sun")
+        if sun:
+            sunrise = sun.attributes.get("next_rising")
+            sunset = sun.attributes.get("next_setting")
+        else:
+            # fallback if sun entity missing: poll all day
+            sunrise = now - timedelta(hours=1)
+            sunset = now + timedelta(hours=1)
 
         poll_start = sunrise - SUN_MARGIN
         poll_end = sunset + SUN_MARGIN
 
         if not (poll_start <= now <= poll_end):
-            # Nighttime: return 0 power but keep energy values if available
+            # Nighttime: return 0 power but preserve energy values if available
             if hasattr(self, "data") and self.data:
                 return {
                     "current_power": 0,
