@@ -8,5 +8,4 @@
   "iot_class": "local_polling",
   "config_flow": true
   "author": "JorisBr-NL",
-  "logo": "https://raw.githubusercontent.com/JorisBr-NL/HomeAssistant-SolarBright/edit/main/custom_components/solarbright/logo.png"
-}
+  }
