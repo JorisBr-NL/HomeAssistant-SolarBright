@@ -1,3 +1,2 @@
-DOMAIN = "solarbright"
-
-DEFAULT_SCAN_INTERVAL = 30
+DOMAIN = "solar_inverter"
+DEFAULT_SCAN_INTERVAL = 120
