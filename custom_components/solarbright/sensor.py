@@ -1,52 +1,32 @@
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.const import UnitOfPower, UnitOfEnergy
-from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
-from .const import DOMAIN
+from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-SENSORS = [
-    # key, name, unit, device_class, state_class
-    ("current_power", "Current Power", UnitOfPower.WATT, SensorDeviceClass.POWER, SensorStateClass.MEASUREMENT),
-    ("daily_energy", "Daily Energy", UnitOfEnergy.KILO_WATT_HOUR, SensorDeviceClass.ENERGY, SensorStateClass.TOTAL),
-    ("total_energy", "Total Energy", UnitOfEnergy.KILO_WATT_HOUR, SensorDeviceClass.ENERGY, SensorStateClass.TOTAL_INCREASING),
-]
+from .const import DOMAIN
+from .coordinator import SolarInverterCoordinator
+
 
 async def async_setup_entry(hass, entry, async_add_entities):
-    coordinators = list(hass.data[DOMAIN].values())
+    coordinator = entry.runtime_data
 
-    entities = []
-    # Individual inverter sensors
-    for coord in coordinators:
-        for key, name, unit, device_class, state_class in SENSORS:
-            entities.append(SolarBrightSensor(coord, key, name, unit, device_class, state_class))
+    sensors = [
+        SolarSensor(coordinator, "current_power", "Power", UnitOfPower.WATT),
+        SolarSensor(coordinator, "daily_energy", "Daily Energy", UnitOfEnergy.KILO_WATT_HOUR, "energy", "total_increasing"),
+        SolarSensor(coordinator, "total_energy", "Total Energy", UnitOfEnergy.KILO_WATT_HOUR, "energy", "total_increasing"),
+    ]
 
-    # Combined sensors for all inverters
-    entities.append(CombinedEnergySensor(
-        hass, coordinators, "current_power", "Combined Power", UnitOfPower.WATT,
-        SensorDeviceClass.POWER, SensorStateClass.MEASUREMENT
-    ))
-    entities.append(CombinedEnergySensor(
-        hass, coordinators, "daily_energy", "Combined Daily Energy", UnitOfEnergy.KILO_WATT_HOUR,
-        SensorDeviceClass.ENERGY, SensorStateClass.TOTAL
-    ))
-    entities.append(CombinedEnergySensor(
-        hass, coordinators, "total_energy", "Combined Total Energy", UnitOfEnergy.KILO_WATT_HOUR,
-        SensorDeviceClass.ENERGY, SensorStateClass.TOTAL_INCREASING
-    ))
-
-    async_add_entities(entities)
+    async_add_entities(sensors)
 
 
-class SolarBrightSensor(SensorEntity):
-    """Individual inverter sensor."""
-
-    def __init__(self, coordinator, key, name, unit, device_class, state_class):
-        self.coordinator = coordinator
+class SolarSensor(CoordinatorEntity, SensorEntity):
+    def __init__(self, coordinator, key, name, unit, device_class=None, state_class=None):
+        super().__init__(coordinator)
         self._key = key
-        self._attr_name = name
+        self._attr_name = f"Inverter {name}"
         self._attr_native_unit_of_measurement = unit
         self._attr_device_class = device_class
         self._attr_state_class = state_class
-        self._attr_unique_id = f"{coordinator.ip}_{key}"
 
     @property
     def native_value(self):
@@ -54,45 +34,9 @@ class SolarBrightSensor(SensorEntity):
 
     @property
     def device_info(self):
-        return {
-            "identifiers": {("solarbright", self.coordinator.ip)},
-            "name": f"SolarBright {self.coordinator.ip}",
-            "manufacturer": "SolarBright",
-        }
-
-    async def async_update(self):
-        await self.coordinator.async_request_refresh()
-
-
-class CombinedEnergySensor(SensorEntity):
-    """Virtual sensor combining all inverters."""
-
-    def __init__(self, hass, coordinators, key, name, unit, device_class, state_class):
-        self.hass = hass
-        self.coordinators = coordinators
-        self._key = key
-        self._attr_name = name
-        self._attr_native_unit_of_measurement = unit
-        self._attr_device_class = device_class
-        self._attr_state_class = state_class
-        self._attr_unique_id = f"combined_{key}"
-
-    @property
-    def native_value(self):
-        total = 0
-        for coord in self.coordinators:
-            if coord.data and self._key in coord.data:
-                total += coord.data[self._key]
-        return round(total, 2)
-
-    @property
-    def device_info(self):
-        return {
-            "identifiers": {("solarbright_combined", "all")},
-            "name": "Combined SolarBright Inverters",
-            "manufacturer": "SolarBright",
-        }
-
-    async def async_update(self):
-        for coord in self.coordinators:
-            await coord.async_request_refresh()
+        return DeviceInfo(
+            identifiers={(DOMAIN, self.coordinator.data["serial"])},
+            name="Solar Inverter",
+            manufacturer="Generic",
+            model=self.coordinator.data.get("model"),
+        )
