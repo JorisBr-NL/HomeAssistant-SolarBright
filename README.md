@@ -6,25 +6,34 @@ Custom integration for Hosala SolarBright inverters via local API.
 
 This integration was written and maintained by **Joris Bakker**.
 
+# Solar Inverter (JS API) - Home Assistant
+
+Custom HACS integration for solar inverters exposing data via `/js/status.js`.
+
 ## Features
-- Local polling (no cloud)
-- Multiple inverter support
+
+- Live power (W)
+- Daily energy (kWh)
+- Total energy (kWh)
 - Energy Dashboard compatible
-- Automatic device grouping
 
-## Installation (HACS)
+## Installation
 
-1. Add this repo as a custom repository in HACS
-2. Install "SolarBright Inverter"
+### HACS
+1. Add this repo as a custom repository
+2. Install integration
 3. Restart Home Assistant
-4. Go to Settings → Devices & Services → Add Integration
-5. Enter your inverter IP
 
-## Sensors
+### Manual
+Copy `custom_components/solar_inverter` into your HA config folder.
 
-- Current Power (W)
-- Daily Energy (kWh)
-- Total Energy (kWh)
+## Configuration
+
+Go to:
+Settings → Devices & Services → Add Integration → "Solar Inverter"
+
+Enter:
+- Host (e.g. `192.168.2.2`)
 
 ## Notes
-Tested with SolarBright 4.2KW inverter.
+Tested with SolarBright 4.2kW & 3kW inverter.
