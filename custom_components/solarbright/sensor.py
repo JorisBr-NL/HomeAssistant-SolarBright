@@ -40,6 +40,8 @@ class SolarSensor(CoordinatorEntity, SensorEntity):
         self._attr_native_unit_of_measurement = unit
         self._attr_device_class = device_class
         self._attr_state_class = state_class
+
+        # ✅ unique per inverter + sensor
         self._attr_unique_id = f"{coordinator.host}_{key}"
 
     @property
@@ -49,8 +51,8 @@ class SolarSensor(CoordinatorEntity, SensorEntity):
     @property
     def device_info(self):
         return DeviceInfo(
-            identifiers={(DOMAIN, self.coordinator.data["serial"])},
-            name="Solar Inverter",
+            identifiers={(DOMAIN, self.coordinator.host)},  # ✅ FIXED
+            name=f"Solar Inverter ({self.coordinator.host})",
             manufacturer="Generic",
             model=self.coordinator.data.get("model"),
         )
