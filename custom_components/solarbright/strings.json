@@ -1,0 +1,30 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect SolarBright inverter",
+        "description": "Enter the IP address or hostname of your inverter.",
+        "data": {
+          "host": "Host / IP address"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot connect to the inverter. Check the IP address."
+    },
+    "abort": {
+      "already_configured": "This inverter is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "SolarBright options",
+        "data": {
+          "poll_interval": "Polling interval (seconds)",
+          "skip_night": "Skip polling at night"
+        }
+      }
+    }
+  }
+}
