@@ -1,83 +1,46 @@
-import aiohttp
-import logging
 import re
+import aiohttp
 from datetime import timedelta
+
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
-from homeassistant.util.dt import parse_datetime, now as dt_now
-from .const import DEFAULT_SCAN_INTERVAL
+from homeassistant.helpers.update_coordinator import UpdateFailed
 
-_LOGGER = logging.getLogger(__name__)
-
-SUN_MARGIN = timedelta(minutes=30)
-
-async def fetch_data(session, ip):
-    """Fetch data from inverter API."""
-    ip = ip.strip().replace("http://", "").replace("https://", "")
-    url = f"http://{ip}/js/status.js"
-
-    async with session.get(url, timeout=10) as resp:
-        text = await resp.text()
-
-    match = re.search(r'var webData="([^"]+)"', text)
-    if not match:
-        raise ValueError("webData not found")
-
-    data = match.group(1).split(",")
-
-    return {
-        "current_power": int(data[5]),                # W
-        "daily_energy": round(int(data[6]) / 100, 2), # kWh
-        "total_energy": round(int(data[7]) / 100, 2), # kWh
-    }
+from .const import DOMAIN, DEFAULT_SCAN_INTERVAL
 
 
-class SolarBrightCoordinator(DataUpdateCoordinator):
-    """Coordinator for a single inverter."""
-
-    def __init__(self, hass, session, ip):
+class SolarInverterCoordinator(DataUpdateCoordinator):
+    def __init__(self, hass, host):
         super().__init__(
             hass,
             _LOGGER,
-            name=f"SolarBright {ip}",
+            name=DOMAIN,
             update_interval=timedelta(seconds=DEFAULT_SCAN_INTERVAL),
         )
-        self.session = session
-        self.ip = ip
+        self.host = host
 
     async def _async_update_data(self):
-        """Poll inverter data respecting sunrise/sunset."""
-        now = dt_now()  # tz-aware datetime
+        url = f"http://{self.host}/js/status.js"
 
-        # Get sun entity
-        sun = self.hass.states.get("sun.sun")
-        if sun:
-            sunrise = parse_datetime(sun.attributes.get("next_rising"))
-            sunset = parse_datetime(sun.attributes.get("next_setting"))
-            # Fallback if parsing fails
-            if not sunrise or not sunset:
-                sunrise = now - timedelta(hours=1)
-                sunset = now + timedelta(hours=1)
-        else:
-            # Fallback if sun entity missing
-            sunrise = now - timedelta(hours=1)
-            sunset = now + timedelta(hours=1)
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, timeout=10) as resp:
+                    text = await resp.text()
+        except Exception as err:
+            raise UpdateFailed(f"Error fetching data: {err}")
 
-        poll_start = sunrise - SUN_MARGIN
-        poll_end = sunset + SUN_MARGIN
+        # Extract webData
+        match = re.search(r'webData="([^"]+)"', text)
+        if not match:
+            raise UpdateFailed("webData not found")
 
-        if not (poll_start <= now <= poll_end):
-            # Nighttime: return 0 power but preserve energy values if available
-            if hasattr(self, "data") and self.data:
-                return {
-                    "current_power": 0,
-                    "daily_energy": self.data.get("daily_energy", 0),
-                    "total_energy": self.data.get("total_energy", 0),
-                }
-            return {
-                "current_power": 0,
-                "daily_energy": 0,
-                "total_energy": 0,
-            }
+        data = match.group(1).split(",")
 
-        # Daytime: normal polling
-        return await fetch_data(self.session, self.ip)
+        return {
+            "serial": data[0],
+            "model": data[3],
+            "rated_power": int(data[4] or 0),
+            "current_power": int(data[5] or 0),
+            "daily_energy": int(data[6] or 0) / 100,
+            "total_energy": int(data[7] or 0) / 10,
+            "status": data[9] if len(data) > 9 else "unknown",
+        }
