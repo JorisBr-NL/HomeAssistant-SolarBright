@@ -2,9 +2,9 @@
   "domain": "solarbright",
   "name": "SolarBright Inverter",
   "version": "1.0.0",
-  "documentation": "https://github.com/YOURNAME/solarbright-hacs",
+  "documentation": "https://github.com/JorisBr-NL/HomeAssistant-SolarBright/",
   "requirements": [],
-  "codeowners": ["@YOURNAME"],
+  "codeowners": ["@JorisBr-NL"],
   "iot_class": "local_polling",
   "config_flow": true
 }
