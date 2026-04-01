@@ -1,12 +1,5 @@
 {
-  "domain": "solarbright",
-  "name": "SolarBright Inverter",
-  "version": "1.0.0",
-  "documentation": "https://github.com/JorisBr-NL/HomeAssistant-SolarBright",
-  "requirements": [],
-  "codeowners": ["@JorisBr-NL"],
-  "iot_class": "local_polling",
-  "config_flow": true,
-  "author": "JorisBr-NL",
-  "logo": "https://raw.githubusercontent.com/jorisbakker/solarbright-hacs/main/custom_components/logo.png"
-  }
+  "name": "Solar Inverter (JS API)",
+  "render_readme": true,
+  "domains": ["solar_inverter"]
+}
