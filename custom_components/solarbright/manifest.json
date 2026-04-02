@@ -1,6 +1,6 @@
 {
-  "domain": "solar_inverter",
-  "name": "Solar Inverter (JS API)",
+  "domain": "solarbright",
+  "name": "solarbright",
   "version": "1.0.0",
  "documentation": "https://github.com/JorisBr-NL/HomeAssistant-SolarBright/",
   "requirements": [],
