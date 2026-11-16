@@ -1,0 +1,76 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "SolarBright-omvormer koppelen",
+        "description": "Vul het IP-adres of de hostnaam van de omvormer in. De omvormer moet aan staan (bij daglicht) om hem toe te voegen.",
+        "data": {
+          "host": "Host / IP-adres"
+        }
+      },
+      "reconfigure": {
+        "title": "Adres van de omvormer wijzigen",
+        "description": "Vul het nieuwe IP-adres of de nieuwe hostnaam van deze omvormer in.",
+        "data": {
+          "host": "Host / IP-adres"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Geen verbinding met de omvormer. Controleer het adres en of de omvormer aan staat (zonder zon slaapt hij).",
+      "invalid_response": "Het apparaat antwoordt, maar niet zoals een SolarBright-omvormer."
+    },
+    "abort": {
+      "already_configured": "Deze omvormer is al ingesteld. Het adres is bijgewerkt.",
+      "reconfigure_successful": "Het adres is gewijzigd.",
+      "wrong_device": "Dit adres hoort bij een andere omvormer dan de omvormer die je wijzigt."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "SolarBright-opties",
+        "data": {
+          "poll_interval": "Uitleesinterval",
+          "skip_night": "'s Nachts niet uitlezen"
+        },
+        "data_description": {
+          "poll_interval": "Seconden tussen twee keer uitlezen (5 tot 3600).",
+          "skip_night": "Niet uitlezen zolang de zon onder is. Het vermogen is 's nachts 0 W."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "power": {
+        "name": "Vermogen"
+      },
+      "daily_energy": {
+        "name": "Dagopbrengst"
+      },
+      "total_energy": {
+        "name": "Totale opbrengst"
+      },
+      "rated_power": {
+        "name": "Nominaal vermogen"
+      },
+      "status": {
+        "name": "Status",
+        "state": {
+          "online": "Online",
+          "offline": "Offline",
+          "night": "Nacht"
+        },
+        "state_attributes": {
+          "inverter_status_code": {
+            "name": "Statuscode omvormer"
+          },
+          "last_seen": {
+            "name": "Laatst gezien"
+          }
+        }
+      }
+    }
+  }
+}
