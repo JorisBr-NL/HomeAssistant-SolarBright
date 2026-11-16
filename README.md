@@ -68,7 +68,7 @@ The device is renamed to `SolarBright <serial>`; you can rename it again if you 
 ## Compatibility
 
 Tested with SolarBright 3 kW and 4.2 kW inverters. Requires Home Assistant 2025.1 or
-newer; the logo in the integration list needs 2026.3 or newer.
+newer; the icon and logo in the integration list need 2026.3 or newer.
 
 ## License
 

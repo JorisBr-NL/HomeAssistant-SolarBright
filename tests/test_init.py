@@ -54,7 +54,7 @@ async def test_sensors(hass: HomeAssistant, aioclient_mock) -> None:
     assert float(_state(hass, TOTAL)) == pytest.approx(9876.5)
     assert _state(hass, STATUS) == "online"
     assert _state(hass, "sensor.solarbright_h0000test01_rated_power") == "4200"
-    device = dr.async_get(hass).async_get_device(identifiers={(DOMAIN, entry.entry_id)})
+    (device,) = dr.async_entries_for_config_entry(dr.async_get(hass), entry.entry_id)
     assert device.serial_number == SERIAL
     assert device.model == "SB-TEST"
 

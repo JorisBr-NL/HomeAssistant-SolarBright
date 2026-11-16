@@ -48,13 +48,19 @@ def _adopt_serial_from_device_registry(hass: HomeAssistant, entry: ConfigEntry) 
     """
     if entry.data.get(CONF_SERIAL):
         return
-    device = dr.async_get(hass).async_get_device(identifiers={(DOMAIN, entry.entry_id)})
+    device = _device_of_entry(hass, entry)
     if device is None or not device.serial_number or device.serial_number == "unknown":
         return
     data = {**entry.data, CONF_SERIAL: device.serial_number}
     if device.model and device.model != "Unknown":  # 1.0 used "Unknown" as placeholder
         data[CONF_MODEL] = device.model
     hass.config_entries.async_update_entry(entry, data=data)
+
+
+def _device_of_entry(hass: HomeAssistant, entry: ConfigEntry) -> dr.DeviceEntry | None:
+    """The inverter device of this entry (one device per entry)."""
+    devices = dr.async_entries_for_config_entry(dr.async_get(hass), entry.entry_id)
+    return next((d for d in devices if (DOMAIN, entry.entry_id) in d.identifiers), None)
 
 
 def _store_device_details(
