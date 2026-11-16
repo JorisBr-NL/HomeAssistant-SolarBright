@@ -1,0 +1,76 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect SolarBright inverter",
+        "description": "Enter the IP address or host name of the inverter. It must be switched on (in daylight) to be added.",
+        "data": {
+          "host": "Host / IP address"
+        }
+      },
+      "reconfigure": {
+        "title": "Change inverter address",
+        "description": "Enter the new IP address or host name of this inverter.",
+        "data": {
+          "host": "Host / IP address"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot connect to the inverter. Check the address, and that the inverter is on (it sleeps when there is no sun).",
+      "invalid_response": "The device answered, but not like a SolarBright inverter."
+    },
+    "abort": {
+      "already_configured": "This inverter is already configured. Its address has been updated.",
+      "reconfigure_successful": "The address has been changed.",
+      "wrong_device": "This address belongs to a different inverter than the one being changed."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "SolarBright options",
+        "data": {
+          "poll_interval": "Polling interval",
+          "skip_night": "Skip polling at night"
+        },
+        "data_description": {
+          "poll_interval": "Seconds between two reads (5 to 3600).",
+          "skip_night": "Do not read while the sun is below the horizon. Power is reported as 0 W at night."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "power": {
+        "name": "Power"
+      },
+      "daily_energy": {
+        "name": "Daily energy"
+      },
+      "total_energy": {
+        "name": "Total energy"
+      },
+      "rated_power": {
+        "name": "Rated power"
+      },
+      "status": {
+        "name": "Status",
+        "state": {
+          "online": "Online",
+          "offline": "Offline",
+          "night": "Night"
+        },
+        "state_attributes": {
+          "inverter_status_code": {
+            "name": "Inverter status code"
+          },
+          "last_seen": {
+            "name": "Last seen"
+          }
+        }
+      }
+    }
+  }
+}

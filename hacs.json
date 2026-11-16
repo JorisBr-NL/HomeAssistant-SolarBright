@@ -1,5 +1,5 @@
 {
-  "name": "Solarbright Inverter",
+  "name": "SolarBright Inverter",
   "render_readme": true,
-  "domains": ["solarbright"]
+  "homeassistant": "2025.1.0"
 }
